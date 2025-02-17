@@ -1,0 +1,17 @@
+streamlit
+pandas
+numpy
+matplotlib
+plotly
+yfinance
+openyxl
+logging
+warnings
+cmdstanpy
+scipy
+prophet
+pandas_datareader
+pandas.errors
+multiprocessing
+scipy
+datetime
