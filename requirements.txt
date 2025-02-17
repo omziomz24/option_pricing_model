@@ -6,8 +6,4 @@ cmdstanpy
 scipy
 prophet
 pandas_datareader
-<<<<<<< HEAD
 scikit-learn
-=======
-scikit-learn
->>>>>>> 5bd147f94 (Updated existing files)
