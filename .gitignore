@@ -1,0 +1,21 @@
+# Ignore virtual environment
+.venv/
+venv/
+
+# Ignore compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore large data files
+*.dll
+*.lib
+*.bin
+*.hdf5
+*.json
+*.pkl
+*.txt
+
+# Ignore logs and cache
+*.log
+*.cache/
