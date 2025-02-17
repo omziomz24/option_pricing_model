@@ -60,15 +60,25 @@ def get_stock_data(ticker, start, end, price_column='Adj Close'):
 
     return [data, start, end, price_column]
 
+<<<<<<< HEAD
 def get_rfr(start_date, tte):
     # Log
     logging.info("Projecting and retrieving risk free rate (AUS data)")
+=======
+def get_rfr(start_date, tte, suffix: str):
+    # Log
+    logging.info("Projecting and retrieving risk free rate")
+>>>>>>> 5bd147f94 (Updated existing files)
     
     end_date = get_end_date(start_date, tte)
     
     # Set up risk free rate forecast
     rfr = RFR_Projection(365)
+<<<<<<< HEAD
     rfr.forecast()
+=======
+    rfr.forecast(suffix)
+>>>>>>> 5bd147f94 (Updated existing files)
     rfr_forecast_results = rfr.get_forecast()
 
     # Filter for appropriate risk free rates
@@ -233,7 +243,11 @@ def format_value(symbol: str, value: float, decimal_places: int):
         return value  # Return unformatted value if symbol is not recognized
 
 
+<<<<<<< HEAD
 def run_pricing_model(ticker: str, start_date: str, tte: int, strike: float, stock_data_start="2022-01-01", stock_data_end="2025-03-30", simulations=10000):
+=======
+def run_pricing_model(ticker: str, start_date: str, tte: int, strike: float, stock_data_start: str = "2022-01-01", stock_data_end: str = "2025-03-30", rfr_suffix: str = "AU-10", simulations: int = 10000):
+>>>>>>> 5bd147f94 (Updated existing files)
     """
     Simulates option pricing for a European call/put option using a Monte Carlo method 
     based on Geometric Brownian Motion (GBM).
@@ -256,6 +270,11 @@ def run_pricing_model(ticker: str, start_date: str, tte: int, strike: float, sto
         The start date for retrieving historical stock data (default: "2022-01-01").
     stock_data_end : str, optional
         The end date for retrieving historical stock data (default: "2025-03-30").
+<<<<<<< HEAD
+=======
+    rfr_suffix : str, optional
+        Which government bond yields to use for risk free rate forecast (default: "AU-10").
+>>>>>>> 5bd147f94 (Updated existing files)
     simulations : int, optional
         The number of Monte Carlo simulations to run (default: 10,000).
 
@@ -277,6 +296,10 @@ def run_pricing_model(ticker: str, start_date: str, tte: int, strike: float, sto
         - "stock prices" (NDArray): Contains all historic stock price data and associated dates
         - "stock dates" (NDArray): Contains all the assocaited dates for the stock prices
         - "all simulations" (list): Contains lists of all geometric brownian motion stock price simulations
+<<<<<<< HEAD
+=======
+        - "rfr dataset" (str): Contains the code of which dataset risk free rate was generated from
+>>>>>>> 5bd147f94 (Updated existing files)
     """
 
     # Step 1: Retrieving historical stock data
@@ -301,7 +324,11 @@ def run_pricing_model(ticker: str, start_date: str, tte: int, strike: float, sto
             st.write("📈 Analyzing market risk free rate...")
     calculation_status.update(state="running")
 
+<<<<<<< HEAD
     rfr, rfr_range = get_rfr(start_date, tte)
+=======
+    rfr, rfr_range = get_rfr(start_date, tte, rfr_suffix)
+>>>>>>> 5bd147f94 (Updated existing files)
     print(f"Risk Free Rate: {rfr:.4f}")
     # Prints the last 4 risk free rates if we want to view it
     #print(rfr_range.tail(4))
@@ -365,7 +392,12 @@ def run_pricing_model(ticker: str, start_date: str, tte: int, strike: float, sto
         "stock prices": minimiser.prices,
         "stock dates": minimiser.dates,
         "all simulations": all_simulations,
+<<<<<<< HEAD
         "calculation status": calculation_status
+=======
+        "calculation status": calculation_status,
+        "rfr dataset": rfr_suffix
+>>>>>>> 5bd147f94 (Updated existing files)
     }
 
 def calculate_greeks(option_type: str, S: float, K: float, T: float, r: float, sigma: float, decimals: int = 4):
