@@ -59,13 +59,8 @@ class ML_Volatility_Model:
         self.model.fit(X_train, y_train)
         predictions = self.model.predict(X_test)
 
-<<<<<<< HEAD
         # error = mean_squared_error(y_test, predictions, squared=False)
         # print(f"Root Mean Squared Error of Machine Learning Volatility Model: {error:.3f}")
-=======
-        #error = mean_squared_error(y_test, predictions, squared=False)
-        #print(f"Root Mean Squared Error of Machine Learning Volatility Model: {error:.3f}")
->>>>>>> 5bd147f94 (Updated existing files)
 
 
     def predict_volatility(self):
