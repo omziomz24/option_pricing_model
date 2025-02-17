@@ -9,7 +9,6 @@ import matplotlib.dates as mdates
 import matplotlib.ticker as mticker
 import plotly.express as px
 import yfinance as yf
-import openpyxl
 import logging
 import warnings
 import cmdstanpy
