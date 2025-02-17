@@ -21,8 +21,4 @@ from pandas_datareader import data as pdr
 from pandas.errors import PerformanceWarning
 from multiprocessing import Pool
 from scipy.optimize import minimize
-<<<<<<< HEAD
 from datetime import *
-=======
-from datetime import *
->>>>>>> 5bd147f94 (Updated existing files)
