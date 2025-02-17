@@ -1,13 +1,9 @@
 matplotlib
 plotly
 yfinance
-logging
-warnings
 cmdstanpy
 scipy
 prophet
-pandas_datareader
-pandas.errors
+pandas-datareader
 multiprocessing
-scipy
 datetime
