@@ -18,6 +18,8 @@ if __name__ == "__main__":
          = None, None, None, None, None, None, None, None, None
 
     with st.sidebar:
+        st.markdown(LINKEDIN_FLEX, unsafe_allow_html=True)
+
         st.title("💡 Price Options Here ↓")
         st.subheader("Enter Option Details")
 
