@@ -6,4 +6,4 @@ cmdstanpy
 scipy
 prophet
 pandas_datareader
-sklearn
+scikit-learn
