@@ -31,7 +31,6 @@ if __name__ == "__main__":
         if st.button("Calculate Option Price"):
             # Resets side bar progress (if run without errors main page will be updated)
             update_main = False
-            inputs_error = False
 
             # Blank input checkers
             if not asset_ticker:
@@ -74,8 +73,6 @@ if __name__ == "__main__":
 
                 except Exception as e:
                     # Raise error if pricing model errors out (likely due to inputs being incorrect)
-                    inputs_error = True
-                    calculation_loading_status.update(state="error")
                     st.error("An unexpected error has occurred. Please check the inputs and try again.")
 
     if update_main:
