@@ -5,5 +5,3 @@ cmdstanpy
 scipy
 prophet
 pandas-datareader
-multiprocessing
-datetime
