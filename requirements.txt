@@ -6,3 +6,4 @@ cmdstanpy
 scipy
 prophet
 pandas_datareader
+sklearn
