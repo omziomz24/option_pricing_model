@@ -49,6 +49,29 @@ By leveraging Monte Carlo methods, this approach provides a flexible and robust 
 Try adjusting the parameters to see how they affect option pricing for assets on the **ASX 200 or S&P 500**!
 """
 
+<<<<<<< HEAD
+=======
+# LinkedIn Plug
+LINKEDIN_FLEX = """
+                <div style="
+                    border: 2px solid #0077B5; 
+                    border-radius: 10px; 
+                    padding: 7.5px; 
+                    display: flex; 
+                    align-items: center;
+                    justify-content: center;
+                    width: 100%;
+                ">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png" 
+                        width="30" style="margin-right: 10px;">
+                    <a href="https://www.linkedin.com/in/omaramin23" target="_blank" 
+                    style="font-size: 16px; text-decoration: none; color: #0077B5; font-weight: bold;">
+                        Connect with me on LinkedIn
+                    </a>
+                </div>
+                """
+
+>>>>>>> 5bd147f94 (Updated existing files)
 # Option price display (placeholders used instead of f-string)
 OPTION_PRICE_DISPLAY = """
 <div style="display: flex; justify-content: center; gap: 15px;">

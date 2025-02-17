@@ -21,4 +21,9 @@ from .udf import (supress_warnings, get_end_date,
 
 # Import constants
 from .constants import all_tickers
+<<<<<<< HEAD
 from .website_scripts.html_constants import MODEL_ERROR_MSG, MODEL_DESCRIPTION, OPTION_PRICE_DISPLAY, OPTION_GREEK_DESCRIPTION
+=======
+from .website_scripts.html_constants import MODEL_ERROR_MSG, MODEL_DESCRIPTION, LINKEDIN_FLEX, \
+     OPTION_PRICE_DISPLAY, OPTION_GREEK_DESCRIPTION
+>>>>>>> 5bd147f94 (Updated existing files)
