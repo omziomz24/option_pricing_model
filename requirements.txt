@@ -4,4 +4,4 @@ yfinance
 cmdstanpy
 scipy
 prophet
-pandas-datareader
+pandas_datareader
