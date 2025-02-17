@@ -4,7 +4,6 @@ numpy
 matplotlib
 plotly
 yfinance
-openyxl
 logging
 warnings
 cmdstanpy
