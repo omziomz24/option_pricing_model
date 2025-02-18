@@ -114,3 +114,13 @@ OPTION_GREEK_DESCRIPTION = """
                             - **Buyers** want high Delta, high Vega, and low Theta.
                             - **Sellers** prefer low Delta, low Vega, and high Theta.
                             """
+
+# Custom sidebar width
+SIDEBAR_WIDTH = """
+                <style>
+                    [data-testid="stSidebar"] {
+                        min-width: 400px;  /* Adjust as needed */
+                        max-width: 400px;
+                    }
+                </style>
+                """

@@ -20,5 +20,5 @@ from prophet import Prophet
 from pandas_datareader import data as pdr
 from pandas.errors import PerformanceWarning
 from multiprocessing import Pool
-from scipy.optimize import minimize
+from scipy.optimize import minimize, brentq
 from datetime import *

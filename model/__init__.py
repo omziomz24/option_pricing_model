@@ -16,11 +16,10 @@ from .udf import (supress_warnings, get_end_date,
                 get_stock_data, get_rfr,
                 get_volatility, get_spot_price,
                 display_option_pricing_summary, run_pricing_model,
-                format_value, get_available_tickers, calculate_greeks,
-                run_pricing_model_manual_vol
+                format_value, get_available_tickers, calculate_greeks
                 )
 
 # Import constants
-from .constants import all_tickers, all_rfr_datasets
+from .constants import all_tickers, all_rfr_datasets, stochastic_processes
 from .website_scripts.html_constants import MODEL_ERROR_MSG, MODEL_DESCRIPTION, LINKEDIN_FLEX, \
-     OPTION_PRICE_DISPLAY, OPTION_GREEK_DESCRIPTION
+     OPTION_PRICE_DISPLAY, OPTION_GREEK_DESCRIPTION, SIDEBAR_WIDTH

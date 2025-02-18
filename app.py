@@ -14,10 +14,13 @@ if __name__ == "__main__":
     # Initalise model ouputs to reference anywhere
     call_price, put_price, risk_free_rate, spot_price, volatility,\
         historic_stock_price_data, historic_stock_price_dates, \
-        all_gbm_simulations, calculation_loading_status \
+        all_simulations, calculation_loading_status \
          = None, None, None, None, None, None, None, None, None
 
     with st.sidebar:
+        # Force side bar to be 400px wide to look nicer
+        st.markdown(SIDEBAR_WIDTH, unsafe_allow_html=True)
+        # Add linkedin flex with link to top of sidebar
         st.markdown(LINKEDIN_FLEX, unsafe_allow_html=True)
 
         st.title("💡 Price Options Here ↓")
@@ -34,6 +37,7 @@ if __name__ == "__main__":
             MANUAL_risk_free_rate_dataset = st.selectbox("Use bond yields to project risk free rate", all_rfr_datasets, index=0)
             MANUAL_risk_free_rate = st.number_input("OR Manually input risk free rate (%)", min_value = 0.000, value=None, format="%.3f")
             MANUAL_volatility = st.number_input("Volatility (%)", min_value = 0.000, value=None, format="%.3f")
+            MANUAL_stochastic_process = st.selectbox("Stochastic process", stochastic_processes, index=0)
 
         # Button to submit inputs and checks to see if inputs exist
         if st.button("Calculate Option Price"):
@@ -51,42 +55,6 @@ if __name__ == "__main__":
                 st.error("Please enter an expiry date")
             elif (expiry_date - start_date).days <= 0:
                 st.error("Please input an expiry date which is later than the start date")
-            elif MANUAL_risk_free_rate:
-                st.error("Manual Risk free rate not implemented yet!")
-            elif MANUAL_volatility:
-                time_to_expiry = (expiry_date - start_date).days\
-                
-                try:
-                    pricing_result = run_pricing_model_manual_vol(ticker=str(asset_ticker),
-                                                    start_date=str(start_date),
-                                                    tte=int(time_to_expiry),
-                                                    volatility=MANUAL_volatility/100,
-                                                    strike=float(strike_price),
-                                                    stock_data_start="2022-01-01",
-                                                    stock_data_end="2025-03-30",
-                                                    rfr_suffix=str(MANUAL_risk_free_rate_dataset),
-                                                    simulations=10000)
-                    # Extract model outputs
-                    call_price = pricing_result.get("call price", "N/A")
-                    put_price = pricing_result.get("put price", "N/A")
-                    risk_free_rate = pricing_result.get("risk free rate", "N/A")
-                    spot_price = pricing_result.get("spot price", "N/A")
-                    volatility = pricing_result.get("volatility", "N/A")
-                    historic_stock_price_data = pricing_result.get("stock prices", "N/A")
-                    historic_stock_price_dates = pricing_result.get("stock dates", "N/A")
-                    all_gbm_simulations = pricing_result.get("all simulations", "N/A")
-                    calculation_loading_status = pricing_result.get("calculation status", "N/A")
-
-                    # Display the results in two red-outlined boxes
-                    st.markdown(OPTION_PRICE_DISPLAY.format(call_price="{:.2f}".format(float(call_price)), put_price="{:.2f}".format(float(put_price))), unsafe_allow_html=True)
-                    
-                    update_main = True
-
-                except Exception as e:
-                    print("LMAO!", str(MANUAL_risk_free_rate_dataset))
-                    logging.error("ERROR", exc_info=True)
-                    # Raise error if pricing model errors out (likely due to inputs being incorrect)
-                    st.error("An unexpected error has occurred. Please check the inputs and try again.")
             else:
                 time_to_expiry = (expiry_date - start_date).days
 
@@ -94,6 +62,11 @@ if __name__ == "__main__":
                     pricing_result = run_pricing_model(ticker=str(asset_ticker),
                                                     start_date=str(start_date),
                                                     tte=int(time_to_expiry),
+                                                    manual_input_data=[
+                                                                    MANUAL_volatility/100 if MANUAL_volatility is not None else None,
+                                                                    MANUAL_risk_free_rate/100 if MANUAL_risk_free_rate is not None else None,
+                                                                    MANUAL_stochastic_process if MANUAL_stochastic_process is not None else "Geometric Brownian Motion"
+                                                                ],
                                                     strike=float(strike_price),
                                                     stock_data_start="2022-01-01",
                                                     stock_data_end="2025-03-30",
@@ -108,15 +81,16 @@ if __name__ == "__main__":
                     volatility = pricing_result.get("volatility", "N/A")
                     historic_stock_price_data = pricing_result.get("stock prices", "N/A")
                     historic_stock_price_dates = pricing_result.get("stock dates", "N/A")
-                    all_gbm_simulations = pricing_result.get("all simulations", "N/A")
+                    all_simulations = pricing_result.get("all simulations", "N/A")
                     calculation_loading_status = pricing_result.get("calculation status", "N/A")
-
                     # Display the results in two red-outlined boxes
                     st.markdown(OPTION_PRICE_DISPLAY.format(call_price="{:.2f}".format(float(call_price)), put_price="{:.2f}".format(float(put_price))), unsafe_allow_html=True)
                     
                     update_main = True
 
                 except Exception as e:
+                    # Line is for debugging errors with run_pricing_model() only
+                    # logging.error("", exc_info=True)
                     # Raise error if pricing model errors out (likely due to inputs being incorrect)
                     st.error("An unexpected error has occurred. Please check the inputs and try again.")
 
@@ -125,9 +99,9 @@ if __name__ == "__main__":
             st.write("🔍 Displaying results")
         calculation_loading_status.update(state="running")
 
-        result_loading_placeholder = st.empty()
-        result_loading_placeholder.text(" ")
-        result_loading_placeholder_status = result_loading_placeholder.status(label="Results still loading hang tight...", expanded=False, state="running")
+        result_loading_placeholder1 = st.empty()
+        result_loading_placeholder1.text(" ")
+        result_loading_placeholder_status1 = result_loading_placeholder1.status(label="Results still loading hang tight...", expanded=False, state="running")
         st.subheader("Results:")
 
         # Initalise variables to be referenced area
@@ -250,20 +224,19 @@ if __name__ == "__main__":
                 st.pyplot(option_prices_graph)
             
             with monte_carlo_graph_tab:
-
                 monte_carlo_graph, monte_carlo_ax = plt.subplots(figsize=(10,5))
-
-                for path in all_gbm_simulations:
+                
+                for path in all_simulations:
                     rand_col = np.random.rand(3,)
                     monte_carlo_ax.plot(path, color=rand_col, alpha=0.5)
                 
-                avg_path = np.mean(all_gbm_simulations, axis=0)
+                avg_path = np.mean(all_simulations, axis=0)
                 monte_carlo_ax.plot(avg_path, color='red', label='Average Path', linewidth=2)
 
                 # Formatting
                 monte_carlo_ax.set_xlim(0, time_to_expiry)
                 monte_carlo_ax.set_title(f'Simulated Price Paths', fontsize=14, fontweight="bold")
-                monte_carlo_ax.set_xlabel('Time Steps (days till time to expiry)', fontsize=12)
+                monte_carlo_ax.set_xlabel('Time Steps (days)', fontsize=12)
                 monte_carlo_ax.set_ylabel('Price', fontsize=12)
                 monte_carlo_ax.legend(loc="upper left", fontsize=12)
                 monte_carlo_ax.grid(True, linestyle="--", alpha=0.7)
@@ -273,9 +246,9 @@ if __name__ == "__main__":
                 st.pyplot(monte_carlo_graph)
 
         # Put this after everything on the main page has finished loading to finish status loaders
-        result_loading_placeholder_status.update(label="Results now completed!", state="complete", expanded=False)
+        result_loading_placeholder_status1.update(label="Results now completed!", state="complete", expanded=False)
         sleeper.sleep(1)
-        result_loading_placeholder.empty()
+        result_loading_placeholder1.empty()
         calculation_loading_status.update(
             label="🧮 Model complete!", state="complete", expanded=False
         )
