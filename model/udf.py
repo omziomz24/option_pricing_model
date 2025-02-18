@@ -372,6 +372,151 @@ def run_pricing_model(ticker: str, start_date: str, tte: int, strike: float, sto
         "rfr dataset": rfr_suffix
     }
 
+def run_pricing_model_manual_vol(ticker: str, start_date: str, tte: int, volatility: float, strike: float, stock_data_start: str = "2022-01-01", stock_data_end: str = "2025-03-30", rfr_suffix: str = "AU-10", simulations: int = 10000):
+    """
+    Simulates option pricing for a European call/put option using a Monte Carlo method 
+    based on Geometric Brownian Motion (GBM).
+
+    This function retrieves historical stock data, estimates the risk-free rate and volatility, 
+    and then runs a Monte Carlo simulation to determine the fair value of European-style options. 
+    The calculation is parallelized for efficiency.
+
+    Parameters
+    ----------
+    ticker : str
+        The stock ticker symbol for the underlying asset.
+    start_date : str
+        The valuation date for the option pricing model.
+    tte : int
+        Time to expiry in days.
+    volatility : float
+        The volatility for the asset to be used in the simulation
+    strike : float
+        The strike price of the option.
+    stock_data_start : str, optional
+        The start date for retrieving historical stock data (default: "2022-01-01").
+    stock_data_end : str, optional
+        The end date for retrieving historical stock data (default: "2025-03-30").
+    rfr_suffix : str, optional
+        Which government bond yields to use for risk free rate forecast (default: "AU-10").
+    simulations : int, optional
+        The number of Monte Carlo simulations to run (default: 10,000).
+
+    Returns
+    -------
+    dict
+        A dictionary containing:
+        - "ticker" (str): The stock ticker.
+        - "start_date" (str): The date when the option pricing is evaluated.
+        - "time to expiry" (int): The number of days until the option expires.
+        - "strike" (float): The option's strike price.
+        - "stock data start" (str): The start date for historical stock data.
+        - "stock data end" (str): The end date for historical stock data.
+        - "risk free rate" (float): The projected risk-free interest rate.
+        - "volatility" (float): Contains the manually inputted user volatility
+        - "spot price" (float): The estimated current price of the underlying asset.
+        - "volatility" (float): The estimated future volatility of the underlying asset.
+        - "call price" (float): The estimated fair value of the European call option.
+        - "put price" (float): The estimated fair value of the European put option.
+        - "stock prices" (NDArray): Contains all historic stock price data and associated dates
+        - "stock dates" (NDArray): Contains all the assocaited dates for the stock prices
+        - "all simulations" (list): Contains lists of all geometric brownian motion stock price simulations
+        - "rfr dataset" (str): Contains the code of which dataset risk free rate was generated from
+    """
+
+    # Step 1: Retrieving historical stock data
+    status_placeholder = st.empty()
+    calculation_status = status_placeholder.status("🧮 Calculating option price...", expanded=True)
+
+    with calculation_status:
+            st.write("📊 Retrieving historical stock data...")
+    calculation_status.update(state="running")
+
+    supress_warnings()
+
+    # Initialise the minimiser model
+    minimiser = Return_Volatility_Minimisation(dt=1/252)
+
+    # Initialise input variables 
+    stock_data = get_stock_data(ticker, start=stock_data_start, end=stock_data_end)
+
+
+    # Step 2: Projecting market risk free rate
+    with calculation_status:
+            st.write("📈 Analyzing market risk free rate...")
+    calculation_status.update(state="running")
+
+    rfr, rfr_range = get_rfr(start_date, tte, rfr_suffix)
+    print(f"Risk Free Rate: {rfr:.4f}")
+    # Prints the last 4 risk free rates if we want to view it
+    #print(rfr_range.tail(4))
+    
+    # Step 3: Analyse asset volatility
+    with calculation_status:
+            st.write("📈 Implementing volatility rate...")
+    calculation_status.update(state="running")
+    
+    # Manually inputted no need for ML algorithm need to still run get_volatility to get around errors in get_spot_price
+    future_volatility = get_volatility(start_date, stock_data, minimiser, tte, ticker)
+    # MANUAL OVERRIDE
+    future_volatility = volatility
+    
+    # Need to put spot price calculation here because of how things are initalised above
+    spot_price = get_spot_price(start_date, minimiser)
+    print(f"Spot Price: ${spot_price:.3f}")
+
+    # Step 4: Running monte carlo simulations
+    with calculation_status:
+            st.write("🎲 Running Simulations...")
+    calculation_status.update(state="running")
+
+    logging.info("Now running stochastic differential equations to calculate option price")
+    
+    simulation = European_Option_Simulation(
+        stochastic_process_type="GBM",
+        strike=Strike(strike),
+        sims=simulations,
+        initial_price=spot_price,
+        drift=rfr,
+        delta_t=1/365,
+        volatility=future_volatility,
+        tte=tte/365,
+        rfr_appropriate_dates=rfr_range
+    )
+
+    # Run simulations with multiprocessing
+    call_price, put_price, all_simulations = simulation.run_multiprocessing(20)
+    print(f"Call Option Price: ${call_price:.3f}")
+    print(f"Call Option Price: ${put_price:.3f}")
+
+    calculation_status.update(label="🧮 Model results loading...", state="running") 
+
+    # Display results summary in terminal
+    logging.info("\033[1;32m--Finished Model--\033[0m")
+    display_option_pricing_summary(
+        ticker, start_date, tte, strike, stock_data_start, stock_data_end, 
+        rfr, spot_price, future_volatility, call_price, put_price
+    )
+
+    return {
+        "ticker": ticker,
+        "start_date": start_date,
+        "time to expiry": tte,
+        "strike": strike,
+        "stock data start": stock_data_start,
+        "stock data end": stock_data_end,
+        "risk free rate": rfr,
+        "volatility": volatility,
+        "spot price": spot_price,
+        "call price": call_price,
+        "put price": put_price,
+        "stock prices": minimiser.prices,
+        "stock dates": minimiser.dates,
+        "all simulations": all_simulations,
+        "calculation status": calculation_status,
+        "rfr dataset": rfr_suffix
+    }
+
 def calculate_greeks(option_type: str, S: float, K: float, T: float, r: float, sigma: float, decimals: int = 4):
     """
     Compute the Greeks for a European call or put option using the Black-Scholes model.
