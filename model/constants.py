@@ -13,5 +13,8 @@ rfr_datasets_mapping = {
             "US-1": 'US_1yr_rfr.csv'
         }
 
-# All datasets avaialable to use to calculate risk free rates to use in streamlit
+# All datasets available to use to calculate risk free rates to use in streamlit
 all_rfr_datasets = [ key + "yr" for key in list(rfr_datasets_mapping.keys()) ]
+
+# All stochastic processes available to use to calculate asset price in the future
+stochastic_processes = ["Geometric Brownian Motion", "Arithmetic Brownian Motion", "Multifractal Model of Asset Returns"]
