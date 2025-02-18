@@ -29,6 +29,12 @@ if __name__ == "__main__":
         start_date = st.date_input("Select a start date")
         expiry_date = st.date_input("Select an expiry date", value=None)
 
+        # Extra advanced user inputs
+        with st.expander(label="⚙️ Click here for advanced settings", expanded=False) as advanced_settings_expander:
+            MANUAL_risk_free_rate_dataset = st.selectbox("Use bond yields to project risk free rate", all_rfr_datasets, index=0)
+            MANUAL_risk_free_rate = st.number_input("OR Manually input risk free rate (%)", min_value = 0.000, value=None, format="%.3f")
+            MANUAL_volatility = st.number_input("Volatility (%)", min_value = 0.000, value=None, format="%.3f")
+
         # Button to submit inputs and checks to see if inputs exist
         if st.button("Calculate Option Price"):
             # Resets side bar progress (if run without errors main page will be updated)
@@ -45,6 +51,42 @@ if __name__ == "__main__":
                 st.error("Please enter an expiry date")
             elif (expiry_date - start_date).days <= 0:
                 st.error("Please input an expiry date which is later than the start date")
+            elif MANUAL_risk_free_rate:
+                st.error("Manual Risk free rate not implemented yet!")
+            elif MANUAL_volatility:
+                time_to_expiry = (expiry_date - start_date).days\
+                
+                try:
+                    pricing_result = run_pricing_model_manual_vol(ticker=str(asset_ticker),
+                                                    start_date=str(start_date),
+                                                    tte=int(time_to_expiry),
+                                                    volatility=MANUAL_volatility/100,
+                                                    strike=float(strike_price),
+                                                    stock_data_start="2022-01-01",
+                                                    stock_data_end="2025-03-30",
+                                                    rfr_suffix=str(MANUAL_risk_free_rate_dataset),
+                                                    simulations=10000)
+                    # Extract model outputs
+                    call_price = pricing_result.get("call price", "N/A")
+                    put_price = pricing_result.get("put price", "N/A")
+                    risk_free_rate = pricing_result.get("risk free rate", "N/A")
+                    spot_price = pricing_result.get("spot price", "N/A")
+                    volatility = pricing_result.get("volatility", "N/A")
+                    historic_stock_price_data = pricing_result.get("stock prices", "N/A")
+                    historic_stock_price_dates = pricing_result.get("stock dates", "N/A")
+                    all_gbm_simulations = pricing_result.get("all simulations", "N/A")
+                    calculation_loading_status = pricing_result.get("calculation status", "N/A")
+
+                    # Display the results in two red-outlined boxes
+                    st.markdown(OPTION_PRICE_DISPLAY.format(call_price="{:.2f}".format(float(call_price)), put_price="{:.2f}".format(float(put_price))), unsafe_allow_html=True)
+                    
+                    update_main = True
+
+                except Exception as e:
+                    print("LMAO!", str(MANUAL_risk_free_rate_dataset))
+                    logging.error("ERROR", exc_info=True)
+                    # Raise error if pricing model errors out (likely due to inputs being incorrect)
+                    st.error("An unexpected error has occurred. Please check the inputs and try again.")
             else:
                 time_to_expiry = (expiry_date - start_date).days
 
@@ -55,6 +97,7 @@ if __name__ == "__main__":
                                                     strike=float(strike_price),
                                                     stock_data_start="2022-01-01",
                                                     stock_data_end="2025-03-30",
+                                                    rfr_suffix=str(MANUAL_risk_free_rate_dataset),
                                                     simulations=10000)
                     
                     # Extract model outputs
@@ -138,7 +181,6 @@ if __name__ == "__main__":
                     st.markdown("*No meaningful Greeks can be shown*")
 
             with option_greek_explanation_tab:
-                # st.subheader("📖 What are Option Greeks?")
                 st.write(OPTION_GREEK_DESCRIPTION)
 
         with st.expander("Graphs", expanded=False, icon="📊"):

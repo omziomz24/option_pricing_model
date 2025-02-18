@@ -1,4 +1,5 @@
 from .utils import pd, Prophet
+from .constants import rfr_datasets_mapping
 
 class RFR_Projection:
 
@@ -6,20 +7,10 @@ class RFR_Projection:
         self.proj_period = proj_period
         self.projected_df = None
 
-    def forecast(self, data: str):
-        available_data = {
-            "AU-10": 'AUS_10yr_rfr.csv',
-            "AU-5": 'AUS_5yr_rfr.csv',
-            "AU-3": 'AUS_3yr_rfr.csv',
-            "AU-2": 'AUS_2yr_rfr.csv',
-            "US-10": 'US_10yr_rfr.csv',
-            "US-5": 'US_5yr_rfr.csv',
-            "US-2": 'US_2yr_rfr.csv',
-            "US-1": 'US_1yr_rfr.csv'
-        }
+    def forecast(self, data: str, available_data: dict = rfr_datasets_mapping):
         
         # Read and clean data
-        df = pd.read_csv('data/' + available_data.get(data), parse_dates=['ds'], dayfirst=True)
+        df = pd.read_csv('data/' + available_data.get(data[:-2]), parse_dates=['ds'], dayfirst=True)
         df = df[df['y'] != 0]
 
         # Set a pessimistic cap for logistic growth.
