@@ -47,6 +47,10 @@ To estimate the fair value of an option, the model employs **Monte Carlo simulat
 By leveraging Monte Carlo methods, this approach provides a flexible and robust way to price options, especially for cases where analytical solutions are difficult to derive.
 
 Try adjusting the parameters to see how they affect option pricing for assets on the **ASX 200 or S&P 500**!
+
+Check out the ASX option website to see available options!  
+
+[**ASX Single Stock Equity Derivatives**](https://www.asx.com.au/markets/trade-our-derivatives-market/derivatives-market-prices/single-stock-derivatives)
 """
 
 # LinkedIn Plug
