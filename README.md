@@ -65,16 +65,18 @@ To run the model locally, install dependencies and launch the Streamlit app.
 
 ### 🔧 Installation:
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME.git
-cd YOUR_REPO_NAME
+git clone https://github.com/omziomz24/option_pricing_model.git
+cd option_pricing_model
 pip install -r requirements.txt
+```
 
 ### 🚀 Run the Web App Locally:
 ```bash
 streamlit run app.py
+```
 
 # 📜 License
 This project is open-source and available under the MIT License.
 
 # 👨‍💻 About the Developer
-📧 Contact: omziomz36@outlook.com
+📧 Contact: omziomz2336@outlook.com

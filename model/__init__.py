@@ -16,7 +16,8 @@ from .udf import (supress_warnings, get_end_date,
                 get_stock_data, get_rfr,
                 get_volatility, get_spot_price,
                 display_option_pricing_summary, run_pricing_model,
-                format_value, get_available_tickers, calculate_greeks
+                format_value, get_available_tickers, calculate_greeks,
+                add_indicators, fetch_stock_data
                 )
 
 # Import constants

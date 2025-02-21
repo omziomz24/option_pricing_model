@@ -43,7 +43,7 @@ def get_stock_data(ticker, start, end, price_column='Adj Close'):
     # Log
     logging.info("Retrieving historical stock data")
 
-    data = yf.download(ticker, start=start, end=end, progress=True)
+    data = yf.download(ticker, start=start, end=end, progress=True, auto_adjust=True)
 
     # If MultiIndex, drop the second level (ticker name)
     if isinstance(data.columns, pd.MultiIndex):
@@ -483,10 +483,6 @@ def implied_volatility(market_price, S, K, T, r, option_type="call"):
     0.2254  # Example output (varies depending on inputs)
     """
 
-    from scipy.optimize import brentq
-    from scipy.stats import norm
-    import numpy as np
-
     def bs_price(sigma):
         """Black-Scholes price for given volatility."""
         d1 = (np.log(S / K) + (r + 0.5 * sigma**2) * T) / (sigma * np.sqrt(T))
@@ -500,3 +496,19 @@ def implied_volatility(market_price, S, K, T, r, option_type="call"):
         return brentq(lambda sigma: bs_price(sigma) - market_price, 0.001, 3.0)
     except:
         return None
+    
+def add_indicators(df, selected_indicators):
+    if "SMA (50)" in selected_indicators:
+        df["SMA_50"] = df["Close"].rolling(window=50).mean()
+    if "SMA (200)" in selected_indicators:
+        df["SMA_200"] = df["Close"].rolling(window=200).mean()
+    if "EMA (20)" in selected_indicators:
+        df["EMA_20"] = df["Close"].ewm(span=20, adjust=False).mean()
+    if "Bollinger Bands" in selected_indicators:
+        df["BB_Middle"] = df["Close"].rolling(window=20).mean()
+        df["BB_Upper"] = df["BB_Middle"] + 2 * df["Close"].rolling(window=20).std()
+        df["BB_Lower"] = df["BB_Middle"] - 2 * df["Close"].rolling(window=20).std()
+    return df
+
+def fetch_stock_data(ticker, start_date, end_date):
+    return yf.download(ticker, start=start_date, end=end_date, auto_adjust=True)

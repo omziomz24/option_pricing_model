@@ -48,7 +48,9 @@ By leveraging Monte Carlo methods, this approach provides a flexible and robust 
 
 Try adjusting the parameters to see how they affect option pricing for assets on the **ASX 200 or S&P 500**!
 
-Check out the ASX option website to see available options!  
+*Note stocks ending in AX will use AUD and other stocks will use USD*
+
+Check out the ASX option website to see available options! 
 
 [**ASX Single Stock Equity Derivatives**](https://www.asx.com.au/markets/trade-our-derivatives-market/derivatives-market-prices/single-stock-derivatives)
 """
