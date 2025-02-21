@@ -7,6 +7,147 @@ if __name__ == "__main__":
 
     with st.expander("What are options and what is this model?", expanded=False, icon="📋"):
         st.markdown(MODEL_DESCRIPTION)
+    
+    with st.expander("Stock Candlesticks and Indicators", expanded=False, icon="🕯️"):
+        # Select stock ticker
+        candle_ticker = st.selectbox(
+            "Select or search ticker",
+            all_tickers,
+            index=None,
+            placeholder="Start typing...",
+            key="candle_stick_selector"
+        )
+
+        # Date range selection
+        candle_start_date = st.date_input("Start Date", value=pd.to_datetime("2024-01-01"))
+        candle_end_date = st.date_input("End Date", value=pd.to_datetime("today"))
+
+        if "stock_data" not in st.session_state or st.session_state["last_ticker"] != candle_ticker:
+            if candle_ticker:
+                st.session_state["stock_data"] = fetch_stock_data(candle_ticker, candle_start_date, candle_end_date)
+                st.session_state["last_ticker"] = candle_ticker
+
+        # Retrieve stock data from session state
+        candle_prices_df = st.session_state.get("stock_data", pd.DataFrame())
+
+        # Fetch stock data only after user selects a ticker
+        if not candle_prices_df.empty:
+            # Prevent API call when dates are invalid
+            if candle_start_date >= candle_end_date:
+                st.error("❌ The start date must be before the end date. Please select a valid range.")
+            else:
+                candle_prices_df = st.session_state.get("stock_data", pd.DataFrame())
+
+                if candle_prices_df.empty:
+                    st.warning(f"⚠️ No data found for {candle_ticker}. Try a different ticker or date range.")
+                else:
+                    # Reset index to move Date from Index to Column
+                    candle_prices_df = candle_prices_df.reset_index()
+
+                    # If MultiIndex exists, extract the correct column names
+                    if isinstance(candle_prices_df.columns, pd.MultiIndex):
+                        candle_prices_df.columns = candle_prices_df.columns.get_level_values(0)
+
+                    # Rename the first column to "Date" if needed
+                    if candle_prices_df.columns[0] != "Date":
+                        candle_prices_df.rename(columns={candle_prices_df.columns[0]: "Date"}, inplace=True)
+
+                    candle_prices_df["Date"] = pd.to_datetime(candle_prices_df["Date"])
+
+                    # Checkboxes for graph Indicators
+                    st.subheader("📌 Select Indicators to Display:")
+                    sma_50 = st.checkbox("SMA (50)")
+                    sma_200 = st.checkbox("SMA (200)")
+                    ema_20 = st.checkbox("EMA (20)")
+                    bollinger = st.checkbox("Bollinger Bands")
+
+                    # Collect selected indicators
+                    selected_indicators = []
+                    if sma_50:
+                        selected_indicators.append("SMA (50)")
+                    if sma_200:
+                        selected_indicators.append("SMA (200)")
+                    if ema_20:
+                        selected_indicators.append("EMA (20)")
+                    if bollinger:
+                        selected_indicators.append("Bollinger Bands")
+
+                    # Add selected indicators
+                    candle_prices_df = add_indicators(candle_prices_df, selected_indicators)
+
+                    candle_graph = go.Figure()
+
+                    candle_graph.add_trace(go.Candlestick(
+                        x=candle_prices_df["Date"].round(2),
+                        open=candle_prices_df["Open"].round(2),
+                        high=candle_prices_df["High"].round(2),
+                        low=candle_prices_df["Low"].round(2),
+                        close=candle_prices_df["Close"].round(2),
+                        name="Candlestick",
+                        increasing_line_color="lime",
+                        decreasing_line_color="red",
+                    ))
+
+                    # Overlay Selected Indicators
+                    if "SMA (50)" in selected_indicators:
+                        candle_graph.add_trace(go.Scatter(
+                            x=candle_prices_df["Date"],
+                            y=candle_prices_df["SMA_50"],
+                            mode="lines",
+                            name="SMA (50)",
+                            line=dict(color="blue")
+                        ))
+
+                    if "SMA (200)" in selected_indicators:
+                        candle_graph.add_trace(go.Scatter(
+                            x=candle_prices_df["Date"],
+                            y=candle_prices_df["SMA_200"],
+                            mode="lines",
+                            name="SMA (200)",
+                            line=dict(color="purple")
+                        ))
+
+                    if "EMA (20)" in selected_indicators:
+                        candle_graph.add_trace(go.Scatter(
+                            x=candle_prices_df["Date"],
+                            y=candle_prices_df["EMA_20"],
+                            mode="lines",
+                            name="EMA (20)",
+                            line=dict(color="orange")
+                        ))
+
+                    if "Bollinger Bands" in selected_indicators:
+                        candle_graph.add_trace(go.Scatter(
+                            x=candle_prices_df["Date"],
+                            y=candle_prices_df["BB_Upper"],
+                            mode="lines",
+                            name="BB Upper",
+                            line=dict(color="gray", dash="dot")
+                        ))
+                        candle_graph.add_trace(go.Scatter(
+                            x=candle_prices_df["Date"],
+                            y=candle_prices_df["BB_Lower"],
+                            mode="lines",
+                            name="BB Lower",
+                            line=dict(color="gray", dash="dot")
+                        ))
+
+                    # Customize Layout
+                    candle_graph.update_layout(
+                        title=f"     📈 {candle_ticker} Candlestick Chart",
+                        xaxis_title="Date",
+                        yaxis_title="Stock Price",
+                        xaxis_rangeslider_visible=False,
+                        template="plotly_dark",
+                        hovermode="x unified",
+                        dragmode="pan",
+                        plot_bgcolor="#1e1e1e",
+                        paper_bgcolor="#1e1e1e",
+                        font=dict(color="white")
+                    )
+
+                    # Display chart in Streamlit
+                    st.plotly_chart(candle_graph, use_container_width=True)
 
     # When boolean becomes true the sidebar calculation is completed and will start updating main page
     update_main = False
@@ -27,7 +168,7 @@ if __name__ == "__main__":
         st.subheader("Enter Option Details")
 
         # User Inputs
-        asset_ticker = st.selectbox("Select or search ticker", all_tickers, index=None, placeholder="Start typing...")
+        asset_ticker = st.selectbox("Select or search ticker", all_tickers, index=None, placeholder="Start typing...", key="ticker")
         strike_price = st.number_input("Strike price ($)", min_value=0.00, value=None, format="%.2f", )
         start_date = st.date_input("Select a start date")
         expiry_date = st.date_input("Select an expiry date", value=None)
@@ -178,8 +319,8 @@ if __name__ == "__main__":
                 historic_prices_ax.grid(True, linestyle="--", alpha=0.7)
 
                 historic_prices_ax.set_xlim(historic_stock_price_dates.min(), historic_stock_price_dates.max())
-                historic_prices_ax.xaxis.set_major_locator(mdates.AutoDateLocator())  # Automatically adjust spacing
-                historic_prices_ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))  # Format as Year-Month
+                historic_prices_ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+                historic_prices_ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
                 plt.xticks(rotation=37, fontsize=7)
 
                 # Display the chart in Streamlit
